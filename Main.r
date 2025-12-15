@@ -83,3 +83,117 @@ hist(virginica$Petal.Width,
      main = "Virginica Petal Width (cm)",
      xlab = "Width (cm)", 
      col = color[3])
+
+# gets confidence interval of the mean for a data set 
+# default significance level of .05
+getMeanConfidenceInterval <- function(dataSet, sigLevel = .05) {
+  
+  xBar <- mean(dataSet)
+  S <- sd(dataSet) 
+  n <- length (dataSet)
+  
+  dof <- n-1 # degree of freedom
+  stndErr <- S / sqrt(n)
+  
+  tVal <- qt(1 - (sigLevel/2), dof)
+  
+  lowerBound <- xBar - (tVal * stndErr)
+  upperBound <- xBar + (tVal * stndErr)
+  
+  return (c(lowerBound, upperBound))
+}
+
+# use getMeanConfidnceInterval to find CI of petal length for each species
+ptlLenCIsetosa <- getMeanConfidenceInterval(setosa$Petal.Length)
+ptlLenCIversicolor <- getMeanConfidenceInterval(versicolor$Petal.Length)
+ptlLenCIvirginica <- getMeanConfidenceInterval(virginica$Petal.Length)
+
+# round to make display better
+roundPLCISet <- round(ptlLenCIsetosa, 4)
+roundPLCIVer <- round(ptlLenCIversicolor, 4)
+roundPLCIVir <- round(ptlLenCIvirginica, 4)
+
+# display results
+print("95% Confidence Intervals for Petal Length Means:")
+print(paste0("Setosa: [", roundPLCISet[1], ", ", roundPLCISet[2], "]"))
+print(paste0("Versicolor: [", roundPLCIVer[1], ", ", roundPLCIVer[2], "]"))
+print(paste0("Virginica: [", roundPLCIVir[1], ", ", roundPLCIVir[2], "]"))
+
+testTwoVar <- function(dataSet1, dataSet2, sigLevel = .05) {
+  
+  dof1 <- length(dataSet1) - 1
+  dof2 <- length(dataSet2) - 1
+  
+  sampleVar1 <- var(dataSet1)
+  sampleVar2 <- var(dataSet2)
+  
+  testStatisic <- sampleVar1 / sampleVar2
+  
+  pLeft <- pf(testStatisic, dof1, dof2)
+  pRight <- 1 - pf(testStatisic, dof1, dof2)
+    
+  pVal <- 2 * min(pLeft, pRight)
+  
+  # TRUE if variance are equal
+  return (pVal > sigLevel)
+}
+
+# Tests mean1 > mean2 returns TRUE if 1 > 2
+testMeanGreater <- function(dataSet1, dataSet2, sigLevel = .05) {
+  
+  isEqualVar <- testTwoVar(dataSet1, dataSet2)
+  
+  n1 <- length(dataSet1)
+  xBar1 <- mean(dataSet1)
+  sampleVar1 <- var(dataSet1)
+  
+  n2 <- length(dataSet2)
+  xBar2 <- mean(dataSet2)
+  sampleVar2 <- var(dataSet2)
+
+  # observed value
+  obsVal <- 0
+  dof <- 0
+  
+  if (isEqualVar) {
+    dof <- n1 + n2 - 2
+    
+    pooledVar <- ((n1-1)*sampleVar1 + (n2-1)*sampleVar2) / dof
+    
+    obsVal <- (xBar1 - xBar2) / sqrt(pooledVar*(1/n1 + 1/n2))
+  }
+  
+  else {
+    dof <- floor( (sampleVar1/n1 + sampleVar2/n2)^2 / 
+                  (
+                    ((sampleVar1/n1)^2) / (n1 - 1) +
+                    ((sampleVar2/n2)^2) / (n2 - 1)
+                  )
+                )
+    
+    obsVal <- (xBar1 - xBar2) / sqrt(sampleVar1/n1 + sampleVar2/n2)
+  }
+  
+  pVal <- pt(obsVal, dof, lower.tail = FALSE)
+  
+  return (pVal < sigLevel)
+}
+
+ptlVirGrtVer <- testMeanGreater(virginica$Petal.Length, versicolor$Petal.Length)
+ptlVerGrtSet <- testMeanGreater(versicolor$Petal.Length, setosa$Petal.Length)
+
+if (ptlVirGrtVer) {
+  print("Virginica petal length greater than versicolor")
+} else {
+  print("Virginica petal length less than versicolor")
+}
+
+if (ptlVerGrtSet) {
+  print("Versicolor petal length greater than setosa")
+} else {
+  print("Versicolor petal length less than setosa")
+}
+
+
+
+
