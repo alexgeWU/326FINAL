@@ -1,6 +1,7 @@
 # built into R
 data("iris")
 
+# ____CONSTANTS____
 speciesID <- as.numeric(as.factor(iris$Species))
 
 # red = setosa, green = versicolor, blue = virginica
@@ -10,8 +11,12 @@ colorVals <- color[speciesID]
 # circle, triangle, X
 pchVals <- c(1, 2, 4)[speciesID]
 
+# ____COMPARISON OF IRIS TRAITS____
+
 # Graphs of pairs of traits with different colors for each species
-par(mfrow = c(2, 3), mar = c(4, 4, 1, 1), oma = c(0, 0, 2, 0)) 
+par(mfrow = c(3, 2),
+    mar = c(4, 4, 1, 1),
+    oma = c(0, 0, 4, 0)) 
 combinations <- combn(1:4, 2)
 for(i in 1:6) {
   xCol <- combinations[1, i]
@@ -24,65 +29,122 @@ for(i in 1:6) {
        col = colorVals,
        pch = pchVals,
        xlab = xLabel,
-       ylab = yLabel)
+       ylab = yLabel,
+       cex.lab = 1.15)
 }
-mtext("Comparison of Iris Traits", outer = TRUE, font = 2)
+# title
+mtext("Comparison of Iris Traits", outer = TRUE, font = 2, line = 2)
+
+# legend
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 2, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+legend("top", legend = c("Setosa", "Versicolor", "Virginica"),
+       col = color, pch = c(1, 2, 4), horiz = TRUE, bty = "n", cex = 1.2)
+
+# ____FEATURE BOX PLOTS____
 
 # Box plots of each feature by species
 par(mfrow = c(2, 2),
-    mar = c(2, 2, 2, 1),
-    oma = c(0, 0, 0, 0),
+    mar = c(2, 4, 2, 1),
+    oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
 boxplot(Sepal.Length ~ Species,
         data = iris,
-        main = "Sepal Length (cm) by Species Box Plot",
+        main = "Sepal Length by Species Box Plot",
+        ylab = "Sepal Length (cm)",
+        cex.lab = 1.15,
         col = color)
 boxplot(Sepal.Width ~ Species,
         data = iris,
-        main = "Sepal Width (cm) by Species Box Plot",
+        main = "Sepal Width by Species Box Plot",
+        ylab = "Sepal Width (cm)",
+        cex.lab = 1.15,
         col = color)
 boxplot(Petal.Length ~ Species,
         data = iris,
-        main = "Petal Length (cm) by Species Box Plot",
+        main = "Petal Length by Species Box Plot",
+        ylab = "Petal Length (cm)",
+        cex.lab = 1.15,
         col = color)
 boxplot(Petal.Width ~ Species,
         data = iris,
-        main = "Petal Width (cm) by Species Box Plot",
+        main = "Petal Width by Species Box Plot",
+        ylab = "Petal Width (cm)",
+        cex.lab = 1.15,
         col = color)
+
+# legend
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+legend("bottom", legend = c("Setosa", "Versicolor", "Virginica"), 
+       fill = color, horiz = TRUE, bty = "n", cex = 1.15)
+
+# ____HISTOGRAMS____
+
+par(mfrow = c(1, 2),
+    mar = c(4, 4, 2, 1),
+    oma = c(1.5, 0, 0, 0),
+    mgp = c(2.2, .7, 0))
 
 # seperate iris data set into each species
 setosa <- iris[iris$Species == "setosa",]
 versicolor <- iris[iris$Species == "versicolor",]
 virginica <- iris[iris$Species == "virginica",]
 
-# histogram of each feature by species
-par(mfrow = c(3, 2), mar = c(4, 4, 2, 1), mgp = c(2.2, 0.7, 0))
-hist(setosa$Petal.Length, 
-     main = "Setosa Petal Length (cm)",
-     xlab = "Length (cm)", 
-     col = color[1])
-hist(setosa$Petal.Width, 
-     main = "Setosa Petal Width (cm)",
-     xlab = "Width (cm)", 
-     col = color[1])
+# histogram color adjustment
+histColor <- adjustcolor(color, alpha.f = .6)
 
-hist(versicolor$Petal.Length, 
-     main = "Versicolor Petal (cm)",
-     xlab = "Length (cm)", 
-     col = color[2])
-hist(versicolor$Petal.Width, 
-     main = "Versicolor Petal Width (cm)",
-     xlab = "Width (cm)", 
-     col = color[2])
+# petal length params
+ylimits <- c(0, 20)
+xlimits <- c(min(iris$Petal.Length), max(iris$Petal.Length))
+breakLen <- pretty(iris$Petal.Length, n = 25)
 
-hist(virginica$Petal.Length, 
-     main = "Virginica Petal Length (cm)",
-     xlab = "Length (cm)", 
-     col = color[3])
-hist(virginica$Petal.Width, 
-     main = "Virginica Petal Width (cm)",
-     xlab = "Width (cm)", 
-     col = color[3])
+# histogram of petal lengths
+hist(setosa$Petal.Length,
+     breaks = breakLen,
+     ylim = ylimits,
+     xlim = xlimits,
+     main = "Petal Length by Species",
+     xlab = "Petal Length (cm)", 
+     col = histColor[1])
+hist(versicolor$Petal.Length,
+     breaks = breakLen,
+     col = histColor[2],
+     add = TRUE)
+hist(virginica$Petal.Length,
+     breaks = breakLen,
+     col = histColor[3],
+     add = TRUE)
+
+# petal width params
+ylimits <- c(0, 35)
+xlimits <- c(min(iris$Petal.Width), max(iris$Petal.Width))
+breakLen <- pretty(iris$Petal.Width, n = 20)
+
+# histogram of petal widths
+hist(setosa$Petal.Width,
+     breaks = breakLen,
+     ylim = ylimits,
+     xlim = xlimits,
+     main = "Petal Width by Species",
+     xlab = "Petal Width (cm)", 
+     col = histColor[1])
+hist(versicolor$Petal.Width,
+     breaks = breakLen,
+     col = histColor[2],
+     add = TRUE)
+hist(virginica$Petal.Width,
+     breaks = breakLen,
+     col = histColor[3],
+     add = TRUE)
+
+# legend
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+legend("bottom", legend = c("Setosa", "Versicolor", "Virginica"), 
+       fill = histColor, horiz = TRUE, bty = "n")
+
+# ____CONFIDENCE INTERVALS____
 
 # gets confidence interval of the mean for a data set 
 # default significance level of .05
@@ -119,6 +181,9 @@ print(paste0("Setosa: [", roundPLCISet[1], ", ", roundPLCISet[2], "]"))
 print(paste0("Versicolor: [", roundPLCIVer[1], ", ", roundPLCIVer[2], "]"))
 print(paste0("Virginica: [", roundPLCIVir[1], ", ", roundPLCIVir[2], "]"))
 
+# ___HYPOTHESIS TEST ON MEAN____
+
+# helper test variance equivalence of two unknown var
 testTwoVar <- function(dataSet1, dataSet2, sigLevel = .05) {
   
   dof1 <- length(dataSet1) - 1
@@ -138,7 +203,7 @@ testTwoVar <- function(dataSet1, dataSet2, sigLevel = .05) {
   return (pVal > sigLevel)
 }
 
-# Tests mean1 > mean2 returns TRUE if 1 > 2
+# tests mean1 > mean2 returns TRUE if mean1 > mean2
 testMeanGreater <- function(dataSet1, dataSet2, sigLevel = .05) {
   
   isEqualVar <- testTwoVar(dataSet1, dataSet2)
@@ -151,9 +216,8 @@ testMeanGreater <- function(dataSet1, dataSet2, sigLevel = .05) {
   xBar2 <- mean(dataSet2)
   sampleVar2 <- var(dataSet2)
 
-  # observed value
-  obsVal <- 0
-  dof <- 0
+  obsVal <- 0 # observed value
+  dof <- 0 # degree of freedom
   
   if (isEqualVar) {
     dof <- n1 + n2 - 2
@@ -165,35 +229,39 @@ testMeanGreater <- function(dataSet1, dataSet2, sigLevel = .05) {
   
   else {
     dof <- floor( (sampleVar1/n1 + sampleVar2/n2)^2 / 
-                  (
-                    ((sampleVar1/n1)^2) / (n1 - 1) +
-                    ((sampleVar2/n2)^2) / (n2 - 1)
-                  )
-                )
+                    (
+                      ((sampleVar1/n1)^2) / (n1 - 1) +
+                        ((sampleVar2/n2)^2) / (n2 - 1)
+                    )
+    )
     
     obsVal <- (xBar1 - xBar2) / sqrt(sampleVar1/n1 + sampleVar2/n2)
   }
   
   pVal <- pt(obsVal, dof, lower.tail = FALSE)
   
-  return (pVal < sigLevel)
+  return (c(pVal < sigLevel, sigLevel, pVal))
 }
 
-ptlVirGrtVer <- testMeanGreater(virginica$Petal.Length, versicolor$Petal.Length)
-ptlVerGrtSet <- testMeanGreater(versicolor$Petal.Length, setosa$Petal.Length)
 
-if (ptlVirGrtVer) {
-  print("Virginica petal length greater than versicolor")
+PLVirGrtVer <- testMeanGreater(virginica$Petal.Length, versicolor$Petal.Length)
+PLVerGrtSet <- testMeanGreater(versicolor$Petal.Length, setosa$Petal.Length)
+
+if (PLVirGrtVer[1]) {
+  # significant case
+  print(paste0("Reject Null: Virginica length is greater (p = ", 
+               PLVirGrtVer[3] ," > ", PLVirGrtVer[2],")"))
 } else {
-  print("Virginica petal length less than versicolor")
+  # not significant case
+  print(paste0("Fail to Reject: Virginica length is NOT significantly greater",
+               " (p = ", PLVirGrtVer[3]," > ", PLVirGrtVer[2],")"))
 }
 
-if (ptlVerGrtSet) {
-  print("Versicolor petal length greater than setosa")
+if (PLVerGrtSet[1]) {
+  print(paste0("Reject Null: Versicolor length is greater (p = ", 
+               PLVerGrtSet[3] ," > ", PLVerGrtSet[2],")"))
 } else {
-  print("Versicolor petal length less than setosa")
+  print(paste0("Fail to Reject: Versicolor length is NOT significantly greater",
+               " (p = ", PLVerGrtSet[3]," > ", PLVerGrtSet[2],")"))
 }
-
-
-
 
